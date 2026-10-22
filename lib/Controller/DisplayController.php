@@ -61,40 +61,11 @@ class DisplayController extends Controller {
 		$policy->addAllowedFontDomain('data:');
 		$policy->addAllowedImageDomain('*');
 		$policy->addAllowedConnectDomain('blob: data:');
-		// CVE-2024-4367: the patched pdf.js no longer needs eval for rendering.
-		// ContentSecurityPolicy allows 'unsafe-eval' by default, so we must
-		// explicitly disable it (not merely omit allowEvalScript(true)) to make
-		// the new Function() font-rendering sink unreachable in the browser.
-		$policy->allowEvalScript(false);
-		$response->setContentSecurityPolicy($policy);
-
-		return $response;
-	}
-
-	/**
-	 * WebAssembly viewer. Same ?file= contract as showPdfViewer(), so the Files
-	 * app can open either route without changing how it builds the URL.
-	 *
-	 * @PublicPage
-	 * @NoCSRFRequired
-	 *
-	 * @return TemplateResponse
-	 */
-	public function showWasmViewer() {
-		$params = [
-			'urlGenerator' => $this->urlGenerator,
-		];
-
-		$response = new TemplateResponse($this->appName, 'wasmviewer', $params, 'blank');
-
-		$policy = new ContentSecurityPolicy();
-		$policy->addAllowedImageDomain('*');
-		$policy->addAllowedConnectDomain('blob: data:');
 		// The engine is C++ compiled to WebAssembly, so the page must be allowed
 		// to compile a module. 'wasm-unsafe-eval' is the narrow keyword for that
 		// - it does not enable JavaScript eval, which stays disabled below.
 		// Core has no setter for the keyword yet, and the policy builder joins
-		// this list verbatim, so the keyword is passed as a script source.
+		// this list verbatim, so it is passed as a script source.
 		$policy->addAllowedScriptDomain("'wasm-unsafe-eval'");
 		$policy->allowEvalScript(false);
 		$response->setContentSecurityPolicy($policy);

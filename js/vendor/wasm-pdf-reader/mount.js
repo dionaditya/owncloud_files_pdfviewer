@@ -358,6 +358,15 @@ export function mountPdfReader(target, options = {}) {
       });
       if (token !== renderToken || destroyed) return;
       emit('onRender', { page: index, scale, ...out });
+      // Continuous pages are built lazily as they scroll into view, so the
+      // text and link layers have to be attached here, not once up front.
+      if (opts.textLayer !== false) {
+        const size = state.doc.getPageSize(index);
+        pageEl.appendChild(buildTextLayer(state.doc.getText(index), {
+          scale, height: size.height, boxY0: size.boxY0,
+        }));
+      }
+      linkLayer(pageEl, index);
       const hl = opts.highlights?.(index, scale) || [];
       if (hl.length) pageEl.appendChild(highlightLayer(hl, pageEl));
       if (index === state.page) updateStatus();
@@ -452,6 +461,18 @@ export function mountPdfReader(target, options = {}) {
     if (state.doc) opts.continuous ? renderContinuous() : renderSingle();
     updateToolbar();
     emit('onScaleChange', next);
+  }
+
+  // Switch between one-page and continuous scrolling without remounting, which
+  // is what the demo used to do (and it lost scroll position and search hits).
+  function setContinuous(on) {
+    const next = !!on;
+    if (next === !!opts.continuous) return;
+    opts.continuous = next;
+    viewport.classList.toggle('wpdf-viewport--continuous', next);
+    state.pageEls = [];
+    if (state.doc) next ? renderContinuous() : renderSingle();
+    updateToolbar();
   }
 
   async function setDocument(source, { page = 0, filename } = {}) {
@@ -588,6 +609,8 @@ export function mountPdfReader(target, options = {}) {
     setTheme: (theme) => applyTheme(root, theme),
     setInverted: (on) => root.classList.toggle('wpdf-root--invert', !!on),
     search: (query, o) => (state.doc ? state.doc.search(query, o) : []),
+    setContinuous,
+    isContinuous: () => !!opts.continuous,
     rerender: () => (opts.continuous ? renderContinuous() : renderSingle()),
     destroy() {
       destroyed = true;

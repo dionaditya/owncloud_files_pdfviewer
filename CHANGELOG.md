@@ -6,14 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added
-- Optional WebAssembly viewer at `/apps/files_pdfviewer/wasm?file=...`. It uses
-  the same `?file=` contract as the PDF.js route, so the Files app can hand it
-  the same URL; the PDF.js viewer stays the default. The engine is a C++ PDF
-  parser and rasterizer compiled to WebAssembly: no JavaScript is generated from
-  document data and the page CSP keeps `unsafe-eval` disabled, so the
-  CVE-2024-4367 class of font-matrix injection has no sink to reach. Registered
-  as a separate route so reviewers can compare both viewers on the same file.
+### Changed
+- **The viewer no longer ships PDF.js.** Documents are parsed and rasterized by a
+  PDF engine written in C++ and compiled to WebAssembly (`js/vendor/wasm-pdf-reader/`,
+  1.8 MB, 0.9 MB gzipped). The route, the `?file=` contract and the Files app
+  integration are unchanged, so nothing upstream has to move.
+- Scroll mode: pages are stacked and scroll continuously, `?scroll=0` keeps the
+  previous one-page-at-a-time behaviour. Text is selectable and copyable, links
+  are clickable, and annotation appearance streams are rendered.
+- Support for encrypted documents (RC4, AES-128, AES-256), CFF/CID fonts,
+  JPEG 2000 and JBIG2 scans, which the previous viewer handled only through
+  PDF.js.
+- `js/viewer.js` validates `?file=`: same-origin `http(s)` only, so `blob:`,
+  `data:`, `javascript:` and foreign origins are refused. This replaces the
+  pdf.js-specific `workersrc.js` guard and its test.
+- `tests/security/verify-cve-2024-4367.mjs` now pins the replacement's
+  properties (no `eval`/`new Function` in the bundle, the PoC opens and renders
+  without executing) instead of reproducing the pdf.js backport.
+
+### Removed
+- `js/vendor/pdfjs/`, `js/workersrc.js`, `bower.json`, `.bowerrc` and the
+  `make rebuild-pdfjs` target.
 
 ## [1.1.2] - 2026-09-09
 

@@ -13,12 +13,12 @@ This file provides context for AI coding agents (Claude Code, GitHub Copilot, Cu
 
 - `appinfo/` -- App metadata and registration
 - `lib/` -- PHP application logic
-- `js/` -- Frontend JavaScript and vendored PDF.js library
+- `js/` -- frontend JavaScript and the vendored WebAssembly engine
 - `css/` -- Stylesheets
 - `templates/` -- PHP templates (viewer.php)
 - `l10n/` -- Translations
 - `tests/` -- PHPUnit tests
-- `bower.json` -- Bower dependencies (PDF.js)
+- `js/vendor/wasm-pdf-reader/` -- prebuilt engine bundle (see its README)
 - `CONTRIBUTING.md` -- Contribution guidelines
 - `Makefile` -- Build and test targets
 

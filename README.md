@@ -4,7 +4,15 @@
 
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/server)
 
-An ownCloud Classic (OC10) app that integrates the [PDF.js](https://mozilla.github.io/pdf.js/) library to enable in-browser PDF viewing. Users can view PDF files directly within the ownCloud web interface without downloading them, with full support for PDF.js rendering features.
+An ownCloud Classic (OC10) app for in-browser PDF viewing. The document is parsed
+and rasterized by a PDF engine written in C++ and compiled to WebAssembly, so
+nothing but the file itself ever leaves the browser. Text is selectable and
+searchable, links are clickable, annotation appearance streams (signatures,
+stamps) are drawn, encrypted documents prompt for their password, and scanned
+pages decode JBIG2, JPEG 2000, JPEG and CCITT fax.
+
+The app is a viewer, not a service: one route, static assets, and the bytes the
+server already served.
 
 ## Getting Started
 
@@ -14,11 +22,13 @@ Enable the app in the ownCloud admin panel:
 sudo -u www-data php occ app:enable files_pdfviewer
 ```
 
-To update the bundled PDF.js library, see the Makefile target `make rebuild-pdfjs`.
+Scroll mode is the default (`?scroll=0` for single pages). The engine bundle is
+prebuilt under `js/vendor/wasm-pdf-reader/`; its README documents where it comes
+from, how to rebuild it and its licences. There is no bower/npm step at install
+time.
 
 ## Documentation
 
-- [PDF.js](https://mozilla.github.io/pdf.js/)
 - [ownCloud Server Admin Manual](https://doc.owncloud.com/server/latest/admin_manual/)
 
 ## Part of ownCloud Classic (OC10)

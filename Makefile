@@ -51,17 +51,6 @@ clean-deps:
 	rm -Rf vendor
 	rm -Rf vendor-bin/**/vendor vendor-bin/**/composer.lock
 
-.PHONY: rebuild-pdfjs
-rebuild-pdfjs:
-	rm -rf js/vendor/pdfjs
-	rm -rf vendor/pdfjs
-	bower install
-	cd vendor/pdfjs && npm install
-	cd vendor/pdfjs && gulp generic-legacy
-	mkdir -p js/vendor
-	mv vendor/pdfjs/build/generic-legacy js/vendor/pdfjs
-
-
 # Builds the source and appstore package
 .PHONY: dist
 dist: appstore
@@ -108,7 +97,7 @@ test-php-unit-dbg:
 test-security: ## Run the CVE regression checks (node)
 test-security:
 	node tests/security/verify-cve-2024-4367.mjs
-	node tests/security/test-blob-popup-detection.mjs
+	node --test tests/security/test-viewer-url-guard.mjs
 
 .PHONY: test-php-style
 test-php-style: ## Run php-cs-fixer and check owncloud code-style

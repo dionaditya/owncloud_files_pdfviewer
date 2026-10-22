@@ -72,28 +72,12 @@ class DisplayControllerTest extends TestCase {
 		$policy->addAllowedFontDomain('data:');
 		$policy->addAllowedImageDomain('*');
 		$policy->addAllowedConnectDomain('blob: data:');
-		// CVE-2024-4367: the patched pdf.js no longer needs eval for rendering,
-		// so the controller explicitly disables 'unsafe-eval' in the CSP.
-		$policy->allowEvalScript(false);
-		$expectedResponse->setContentSecurityPolicy($policy);
-
-		$this->assertEquals($expectedResponse, $this->controller->showPdfViewer());
-	}
-
-	public function testShowWasmViewer() {
-		$params = [
-			'urlGenerator' => $this->urlGenerator
-		];
-		$expectedResponse = new TemplateResponse($this->appName, 'wasmviewer', $params, 'blank');
-		$policy = new ContentSecurityPolicy();
-		$policy->addAllowedImageDomain('*');
-		$policy->addAllowedConnectDomain('blob: data:');
-		// WebAssembly needs the narrow keyword; JavaScript eval stays off.
+		// WebAssembly needs the narrow keyword; JavaScript eval stays disabled.
 		$policy->addAllowedScriptDomain("'wasm-unsafe-eval'");
 		$policy->allowEvalScript(false);
 		$expectedResponse->setContentSecurityPolicy($policy);
 
-		$this->assertEquals($expectedResponse, $this->controller->showWasmViewer());
+		$this->assertEquals($expectedResponse, $this->controller->showPdfViewer());
 	}
 
 	public function testCanDownload() {
