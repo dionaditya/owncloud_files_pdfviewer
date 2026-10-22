@@ -5,11 +5,13 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/server)
 
 An ownCloud Classic (OC10) app for in-browser PDF viewing. The document is parsed
-and rasterized by a PDF engine written in C++ and compiled to WebAssembly, so
-nothing but the file itself ever leaves the browser. Text is selectable and
-searchable, links are clickable, annotation appearance streams (signatures,
-stamps) are drawn, encrypted documents prompt for their password, and scanned
-pages decode JBIG2, JPEG 2000, JPEG and CCITT fax.
+and rasterized by [wasm-pdf-reader](https://github.com/dionaditya/wasm-pdf-reader),
+a PDF engine written in C++ and compiled to WebAssembly, so nothing but the file
+itself ever leaves the browser. Text is selectable and searchable, links are
+clickable, annotations are drawn from their appearance streams (with a
+`/QuadPoints` fallback for highlights and notes), encrypted documents prompt for
+their password, CJK text is decoded through the Adobe CMaps, and scanned pages
+decode JBIG2, JPEG and CCITT fax.
 
 The app is a viewer, not a service: one route, static assets, and the bytes the
 server already served.
@@ -22,14 +24,40 @@ Enable the app in the ownCloud admin panel:
 sudo -u www-data php occ app:enable files_pdfviewer
 ```
 
-Scroll mode is the default (`?scroll=0` for single pages). The engine bundle is
-prebuilt under `js/vendor/wasm-pdf-reader/`; its README documents where it comes
-from, how to rebuild it and its licences. There is no bower/npm step at install
-time.
+Scroll mode is the default (`?scroll=0` for single pages). There is no
+bower/npm step at install time: the engine bundle is prebuilt under
+`js/vendor/wasm-pdf-reader/` and checked in.
+
+## Rendering engine
+
+The viewer is a thin shell around
+**[wasm-pdf-reader](https://github.com/dionaditya/wasm-pdf-reader)** (MIT, npm
+`@dionaditya/wasm-pdf-reader`). This app adds the ownCloud route, the `?file=`
+contract, the CSP-safe mounting script and the styling; parsing, rasterizing,
+text extraction and annotation painting all happen in the engine.
+
+- **Pinned version**: `js/vendor/wasm-pdf-reader/VERSION.json` records the
+  package version, the upstream commit and the sha256 of every vendored file.
+- **Updating**: `npm install && npm run sync-viewer` (or
+  `npm run sync-viewer -- --from ../wasm-pdf-reader` against a checkout, and
+  `--check` to verify the vendored copy). The resulting diff is the review.
+- **Capabilities and gaps**: the upstream README lists what is supported and
+  `ROADMAP.md` lists what is not yet — today tiling patterns, blend modes,
+  colour-managed (ICC/CMYK) output and some JPEG 2000 codestreams. The app does
+  not paper over them; pages render as they render and failures are reported.
+- **Security**: the engine interprets fonts and colours in C++, generates no
+  JavaScript from document data and is built with `-sDYNAMIC_EXECUTION=0`, so
+  `eval`/`new Function` do not exist in the artifacts. The viewer page keeps
+  `unsafe-eval` disabled and runs under the app's CSP; the CVE-2024-4367
+  regression test in `tests/security/` asserts this against the bundle.
 
 ## Documentation
 
 - [ownCloud Server Admin Manual](https://doc.owncloud.com/server/latest/admin_manual/)
+- [wasm-pdf-reader](https://github.com/dionaditya/wasm-pdf-reader) — engine docs,
+  supported features and the roadmap
+- [Vendored bundle notes](js/vendor/wasm-pdf-reader/README.md) — provenance,
+  update procedure and third-party licences
 
 ## Part of ownCloud Classic (OC10)
 

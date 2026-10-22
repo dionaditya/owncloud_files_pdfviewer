@@ -1,0 +1,13 @@
+{
+  "name": "owncloud-files-pdfviewer",
+  "private": true,
+  "description": "Build-time tooling for the files_pdfviewer app: syncs the wasm-pdf-reader viewer bundle into js/vendor/. Not published.",
+  "license": "AGPL-3.0",
+  "type": "module",
+  "scripts": {
+    "sync-viewer": "node scripts/sync-viewer.mjs"
+  },
+  "devDependencies": {
+    "@dionaditya/wasm-pdf-reader": "github:dionaditya/wasm-pdf-reader#60a9b526001f2b5e923ca946f7cb698a73c8436a"
+  }
+}

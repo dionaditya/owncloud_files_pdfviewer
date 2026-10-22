@@ -1,14 +1,22 @@
-# wasm-pdf-reader (vendored)
+# wasm-pdf-reader (vendored viewer bundle)
 
-Prebuilt viewer bundle used by `/apps/files_pdfviewer/wasm`. Nothing here is
-compiled at install time: the WebAssembly module is checked in.
+The PDF engine and viewer this app renders with. Upstream:
+**https://github.com/dionaditya/wasm-pdf-reader** — MIT, published on npm as
+`@dionaditya/wasm-pdf-reader`.
+
+Bundle version: `@dionaditya/wasm-pdf-reader@0.2.0` (60a9b52)
+
+Nothing here is compiled at install time: ownCloud apps serve static assets, so
+the built bundle is checked in. `VERSION.json` records the package version, the
+upstream commit and the sha256 of every file, so the bytes in this directory can
+always be traced back to a build.
 
 ## What it is
 
 A PDF parser and rasterizer written in C++ and compiled to WebAssembly, plus a
 vanilla-JS viewer on top of it. It replaces the parsing and rendering half of the
-PDF.js integration; the Files app integration, the route and the `?file=`
-contract are unchanged.
+PDF.js integration; the Files app integration, the route and the `?file=` contract
+are unchanged.
 
 Properties that matter for this app:
 
@@ -16,10 +24,16 @@ Properties that matter for this app:
   are interpreted in C++ — and the module is built with
   `-sDYNAMIC_EXECUTION=0`, so `eval`/`new Function` do not exist in the shipped
   artifacts. The page keeps `unsafe-eval` disabled in its CSP.
-- One `pdf-reader.wasm` (2.0 MB) and nothing else: JBIG2 and fax decoding are
-  compiled into it, so scans need no second binary and no re-render.
-- Supports RC4/AES-128/AES-256 encrypted files (password passed by the host),
-  CFF/CID fonts, JPEG 2000, JBIG2, CCITT fax, SMasks, annotations and links.
+- One `pdf-reader.wasm` (2.9 MB) and no second binary: JBIG2 and fax decoding are
+  compiled in, and the 179 Adobe CJK CMaps ship inside it, so scans and Japanese,
+  Chinese or Korean text need no side module and no re-render.
+- Handles RC4/AES-128/AES-256 encrypted files (the host passes the password),
+  CFF/CID fonts and embedded CMap streams, annotations from `/AP` with a
+  `/QuadPoints` fallback, links, `/SMask` and `/Mask`.
+
+Known gaps, with their measured numbers and the order we intend to close them:
+upstream `ROADMAP.md`. Most visible today: tiling patterns, blend modes and
+colour-managed (ICC/CMYK) output; JPEG 2000 codestreams written by most encoders.
 
 ## Files
 
@@ -28,22 +42,37 @@ Properties that matter for this app:
 | `index.js` | entry point, re-exports `PdfDocument`, `mountPdfReader` |
 | `mount.js`, `document.js`, `loader.js`, `text.js` | viewer, document API, wasm loader, text layer |
 | `styles.css` | viewer styles |
-| `wasm/pdf-reader.{mjs,wasm}` | the engine (includes the JBIG2/fax decoders) |
+| `index.d.ts` | TypeScript types |
+| `wasm/pdf-reader.{mjs,wasm}` | the engine (JBIG2/fax decoders and CMaps included) |
+| `VERSION.json` | provenance: package version, upstream commit, sha256 per file |
 
-## Rebuilding
+## Updating
 
-From the upstream project (`https://github.com/dionaditya/wasm-pdf-reader`):
+From the app root:
 
 ```bash
-. ~/emsdk/emsdk_env.sh && ./build.sh && npm run build:js
-cp dist/{index.js,document.js,loader.js,mount.js,text.js,styles.css} .
-cp -r dist/wasm .
+npm install                        # fetches the engine pinned in package.json
+npm run sync-viewer                # copies the bundle here, rewrites VERSION.json
+npm run sync-viewer -- --check     # verify the vendored copy matches the pin
 ```
 
-Requires Emscripten at release time only.
+While developing against an engine checkout:
 
-## Licence
+```bash
+npm run sync-viewer -- --from ../wasm-pdf-reader
+npm run sync-viewer -- --from ../wasm-pdf-reader --check
+```
 
-MIT for the engine and viewer, with Apache-2.0 (PDF.js JBIG2, PDFium fax) and
-BSD-3-Clause (nanopdf JPEG 2000 and CFF tables) components; see
-`THIRD-PARTY.md` / the `LICENSE_*` files next to the modules.
+To move to a newer engine: build it upstream (`./build.sh && npm run build:js`),
+bump the commit in `package.json`, `npm install`, `npm run sync-viewer`, and
+commit the regenerated files together with `VERSION.json` — that diff is the
+review. Emscripten is needed upstream only, never here.
+
+## Licences
+
+The bundle is MIT (upstream `LICENSE`) and links third-party decoders: PDFium's
+JBIG2 + fax codecs (Apache-2.0, via `mozilla/pdf.js.jbig2`, translated to C with
+wabt BSD-2; `simde` MIT), nanopdf's JPEG 2000 decoder and CFF tables
+(Apache-2.0), `stb_image`/`stb_truetype` (MIT/Public Domain), and Adobe's CMap
+resources (BSD-3-Clause). Those notices travel with the upstream repository in
+`THIRD-PARTY.md`; this app is AGPL-3.0 and ships the bundle unmodified.

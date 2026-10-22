@@ -80,6 +80,22 @@ endif
 	tar -czf $(appstore_package_name).tar.gz -C $(appstore_package_name)/../ $(app_name)
 
 ##---------------------
+## Viewer bundle
+##---------------------
+
+# A checkout of dionaditya/wasm-pdf-reader; the npm pin in package.json is used
+# when this is not present.
+VIEWER_SRC ?= ../wasm-pdf-reader
+
+.PHONY: sync-viewer
+sync-viewer: ## Rebuild js/vendor/wasm-pdf-reader from the engine checkout
+	npm run sync-viewer -- --from $(VIEWER_SRC)
+
+.PHONY: check-viewer
+check-viewer: ## Verify the vendored bundle still matches the engine
+	npm run sync-viewer -- --from $(VIEWER_SRC) --check
+
+##---------------------
 ## Tests
 ##---------------------
 

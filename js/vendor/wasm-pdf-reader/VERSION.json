@@ -1,0 +1,47 @@
+{
+  "package": "@dionaditya/wasm-pdf-reader",
+  "version": "0.2.0",
+  "upstream": "https://github.com/dionaditya/wasm-pdf-reader",
+  "commit": "60a9b526001f2b5e923ca946f7cb698a73c8436a",
+  "dirty": false,
+  "syncedAt": "2026-10-22T16:48:55.389Z",
+  "source": "checkout",
+  "files": {
+    "index.js": {
+      "bytes": 532,
+      "sha256": "e05e09f7e7244cdf2cb47e6df34cf9b0f40dcfa086aa91313955e2805c90d8fc"
+    },
+    "document.js": {
+      "bytes": 14244,
+      "sha256": "2362ce60d4ab5e8927fd732c7903b6867fea7b5766b7339ef28508fe92e11284"
+    },
+    "loader.js": {
+      "bytes": 3828,
+      "sha256": "2e837a028a8700e5e36961e0579f5a212f68d7aef981bda448d92b0da5642c6d"
+    },
+    "mount.js": {
+      "bytes": 27847,
+      "sha256": "a063589085db1bac605c402b6bae0e352052c449c3e39d62cb6e46575c87c774"
+    },
+    "text.js": {
+      "bytes": 6908,
+      "sha256": "375413080014bfc836558917d2163a3069f43b99fd5e86db3739a5d6106be1c3"
+    },
+    "styles.css": {
+      "bytes": 7628,
+      "sha256": "7081b043a804341de23193cec9d4d4f265b94268275e6ce6d5dc0a9f62177db4"
+    },
+    "index.d.ts": {
+      "bytes": 7198,
+      "sha256": "92de44e85eb65af4fd1533df246ff8a1ac115902fde7b9d02af719177fdb46cc"
+    },
+    "wasm/pdf-reader.mjs": {
+      "bytes": 16464,
+      "sha256": "aa6585efe2070d13fb9e7c578936540b7743081e613eb161137343943be18eb0"
+    },
+    "wasm/pdf-reader.wasm": {
+      "bytes": 2914437,
+      "sha256": "69add1392ecff0ef4913c6d11194074ad203be369396d4c473bf0c306a508ca2"
+    }
+  }
+}
