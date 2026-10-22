@@ -16,8 +16,8 @@ Properties that matter for this app:
   are interpreted in C++ — and the module is built with
   `-sDYNAMIC_EXECUTION=0`, so `eval`/`new Function` do not exist in the shipped
   artifacts. The page keeps `unsafe-eval` disabled in its CSP.
-- One `pdf-reader.wasm` (1.8 MB, 0.9 MB gzipped). JBIG2 scans use a separate
-  104 KB module that is fetched only when a document contains one.
+- One `pdf-reader.wasm` (2.0 MB) and nothing else: JBIG2 and fax decoding are
+  compiled into it, so scans need no second binary and no re-render.
 - Supports RC4/AES-128/AES-256 encrypted files (password passed by the host),
   CFF/CID fonts, JPEG 2000, JBIG2, CCITT fax, SMasks, annotations and links.
 
@@ -28,8 +28,7 @@ Properties that matter for this app:
 | `index.js` | entry point, re-exports `PdfDocument`, `mountPdfReader` |
 | `mount.js`, `document.js`, `loader.js`, `text.js` | viewer, document API, wasm loader, text layer |
 | `styles.css` | viewer styles |
-| `wasm/pdf-reader.{mjs,wasm}` | the engine |
-| `jbig2/` | optional JBIG2 decoder (Apache-2.0, from PDF.js) |
+| `wasm/pdf-reader.{mjs,wasm}` | the engine (includes the JBIG2/fax decoders) |
 
 ## Rebuilding
 
@@ -37,8 +36,8 @@ From the upstream project (`https://github.com/dionaditya/wasm-pdf-reader`):
 
 ```bash
 . ~/emsdk/emsdk_env.sh && ./build.sh && npm run build:js
-cp dist/{index.js,document.js,loader.js,mount.js,text.js,styles.css,jbig2.js} .
-cp -r dist/wasm dist/jbig2 .
+cp dist/{index.js,document.js,loader.js,mount.js,text.js,styles.css} .
+cp -r dist/wasm .
 ```
 
 Requires Emscripten at release time only.
