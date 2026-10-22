@@ -28,6 +28,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `js/vendor/pdfjs/`, `js/workersrc.js`, `bower.json`, `.bowerrc` and the
   `make rebuild-pdfjs` target.
 
+### Known gaps
+- Predefined CMaps (`UniJIS-UCS2-H`, `GBK-EUC-H`, `Adobe-Japan1-UCS2`, …) are not
+  implemented: only `/Identity-H` and `/Identity-V` are. CJK documents produced
+  with an embedded subset font render correctly; ones that depend on Adobe's CMap
+  tables do not. Text extraction still works when `/ToUnicode` is present.
+
 ## [1.1.2] - 2026-09-09
 
 ### Added
